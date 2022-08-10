@@ -1,0 +1,10 @@
+image==1.5.27
+  - django [required: Any, installed: 1.11.24]
+    - pytz [required: Any, installed: 2019.2]
+  - pillow [required: Any, installed: 6.1.0]
+pipdeptree==0.13.2
+  - pip [required: >=6.0.0, installed: 19.2.3]
+pyscreenshot==0.5.1
+  - EasyProcess [required: Any, installed: 0.2.7]
+xlib==0.21
+  - six [required: >=1.10.0, installed: 1.12.0]
